@@ -1043,6 +1043,15 @@ typedef NS_ENUM(NSInteger, PanDirection){
     }
 }
 
+- (NSUInteger)getCurrentPlayTime
+{
+    if (!self.player) {
+        return 0;
+    }
+    NSInteger currentTime = (NSInteger)CMTimeGetSeconds([self.player currentTime]);
+    return currentTime;
+}
+
 #pragma mark - UIPanGestureRecognizer手势方法
 
 /**
