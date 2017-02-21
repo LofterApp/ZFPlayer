@@ -67,6 +67,9 @@ typedef NS_ENUM(NSInteger, ZFPlayerState) {
 @property (nonatomic, assign, readonly) BOOL          isPauseByUser;
 /** 播发器的几种状态 */
 @property (nonatomic, assign, readonly) ZFPlayerState state;
+/** 播放器当前播放的数据Model */
+@property (nonatomic, strong, readonly) ZFPlayerModel *playerModel;
+
 /** 静音（默认为NO）*/
 @property (nonatomic, assign) BOOL                    mute;
 /** 当cell划出屏幕的时候停止播放（默认为NO） */
@@ -111,5 +114,9 @@ typedef NS_ENUM(NSInteger, ZFPlayerState) {
   * 暂停
  */
 - (void)pause;
+/**
+  * get current play time seconds
+  */
+- (NSUInteger)getCurrentPlayTime;
 
 @end
