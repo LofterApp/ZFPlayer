@@ -118,5 +118,9 @@ typedef NS_ENUM(NSInteger, ZFPlayerState) {
   * get current play time seconds
   */
 - (NSUInteger)getCurrentPlayTime;
+/**
+  * get current buffer progress
+  */
+- (CGFloat)getCurrentBufferProgress;
 
 @end
