@@ -1052,6 +1052,13 @@ typedef NS_ENUM(NSInteger, PanDirection){
     return currentTime;
 }
 
+- (CGFloat)getCurrentBufferProgress
+{
+    NSTimeInterval timeInterval = [self availableDuration];
+    CMTime duration             = self.playerItem.duration;
+    CGFloat totalDuration       = CMTimeGetSeconds(duration);
+    return timeInterval/totalDuration;
+}
 #pragma mark - UIPanGestureRecognizer手势方法
 
 /**
