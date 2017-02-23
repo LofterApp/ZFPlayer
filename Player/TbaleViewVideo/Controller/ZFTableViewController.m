@@ -116,6 +116,10 @@
         
         // 设置播放控制层和model
         [weakSelf.playerView playerControlView:weakSelf.controlView playerModel:playerModel];
+        [weakSelf.playerView enableControlView:NO];
+        weakSelf.playerView.loop = YES;
+        weakSelf.playerView.mute = YES;
+        
         // 下载功能
         weakSelf.playerView.hasDownload = YES;
         // 自动播放

@@ -230,6 +230,12 @@ typedef NS_ENUM(NSInteger, PanDirection){
     self.playerModel = playerModel;
 }
 
+- (void)enableControlView:(BOOL)enable
+{
+    [self.controlView setAlpha:enable ? 1 : 0];
+    [self setUserInteractionEnabled:enable];
+}
+
 /**
  *  自动播放，默认不自动播放
  */
@@ -973,6 +979,10 @@ typedef NS_ENUM(NSInteger, PanDirection){
  */
 - (void)moviePlayDidEnd:(NSNotification *)notification
 {
+    if (self.loop) {
+        [self seekToTime:0 completionHandler:nil];
+        return;
+    }
     self.state = ZFPlayerStateStopped;
     if (self.isBottomVideo && !self.isFullScreen) { // 播放完了，如果是在小屏模式 && 在bottom位置，直接关闭播放器
         self.repeatToPlay = NO;

@@ -84,8 +84,6 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 @property (nonatomic, weak  ) UIButton                *resoultionCurrentBtn;
 /** 占位图 */
 @property (nonatomic, strong) UIImageView             *placeholderImageView;
-/** 控制层消失时候在底部显示的播放进度progress */
-@property (nonatomic, strong) UIProgressView          *bottomProgressView;
 /** 分辨率的名称 */
 @property (nonatomic, strong) NSArray                 *resolutionArray;
 
@@ -140,7 +138,6 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         [self.topImageView addSubview:self.resolutionBtn];
         [self.topImageView addSubview:self.titleLabel];
         [self addSubview:self.closeBtn];
-        [self addSubview:self.bottomProgressView];
         // 添加子控件的约束
         [self makeSubViewsConstraints];
         
@@ -301,10 +298,6 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         make.top.mas_equalTo(self.fastTimeLabel.mas_bottom).offset(10);
     }];
     
-    [self.bottomProgressView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.leading.trailing.mas_offset(0);
-        make.bottom.mas_offset(0);
-    }];
 }
 
 - (void)layoutSubviews
@@ -574,7 +567,6 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     self.backgroundColor           = RGBA(0, 0, 0, 0.3);
     self.lockBtn.alpha             = 1;
     self.shrink                    = NO;
-    self.bottomProgressView.alpha  = 0;
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
 }
 
@@ -584,7 +576,6 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     self.topImageView.alpha       = self.playeEnd;
     self.bottomImageView.alpha    = 0;
     self.lockBtn.alpha            = 0;
-    self.bottomProgressView.alpha = 1;
     // 隐藏resolutionView
     self.resolutionBtn.selected = YES;
     [self resolutionBtnClick:self.resolutionBtn];
@@ -627,7 +618,6 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 {
     _shrink = shrink;
     self.closeBtn.hidden = !shrink;
-    self.bottomProgressView.hidden = shrink;
 }
 
 #pragma mark - getter
@@ -897,16 +887,6 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     return _placeholderImageView;
 }
 
-- (UIProgressView *)bottomProgressView
-{
-    if (!_bottomProgressView) {
-        _bottomProgressView                   = [[UIProgressView alloc] init];
-        _bottomProgressView.progressTintColor = [UIColor whiteColor];
-        _bottomProgressView.trackTintColor    = [UIColor clearColor];
-    }
-    return _bottomProgressView;
-}
-
 #pragma mark - UIGestureRecognizerDelegate
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
@@ -926,7 +906,6 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 {
     [self.activity stopAnimating];
     self.videoSlider.value           = 0;
-    self.bottomProgressView.progress = 0;
     self.progressView.progress       = 0;
     self.currentTimeLabel.text       = @"00:00";
     self.totalTimeLabel.text         = @"00:00";
@@ -1055,7 +1034,6 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     if (!self.isDragged) {
         // 更新slider
         self.videoSlider.value           = value;
-        self.bottomProgressView.progress = value;
         // 更新当前播放时间
         self.currentTimeLabel.text       = [NSString stringWithFormat:@"%02zd:%02zd", proMin, proSec];
     }
@@ -1084,8 +1062,6 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     self.videoSlider.popUpView.hidden = !preview;
     // 更新slider的值
     self.videoSlider.value            = draggedValue;
-    // 更新bottomProgressView的值
-    self.bottomProgressView.progress  = draggedValue;
     // 更新当前时间
     self.currentTimeLabel.text        = currentTimeStr;
     // 正在拖动控制播放进度
@@ -1158,7 +1134,6 @@ static const CGFloat ZFPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     [self hideControlView];
     self.backgroundColor  = RGBA(0, 0, 0, .3);
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
-    self.bottomProgressView.alpha = 0;
 }
 
 /** 

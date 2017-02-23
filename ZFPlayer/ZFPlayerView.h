@@ -72,6 +72,9 @@ typedef NS_ENUM(NSInteger, ZFPlayerState) {
 
 /** 静音（默认为NO）*/
 @property (nonatomic, assign) BOOL                    mute;
+
+@property (nonatomic, assign, setter=isLoop:) BOOL                   loop;    /**< 循环播放 */
+
 /** 当cell划出屏幕的时候停止播放（默认为NO） */
 @property (nonatomic, assign) BOOL                    stopPlayWhileCellNotVisable;
 /** 当cell播放视频由全屏变为小屏时候，是否回到中间位置(默认YES) */
@@ -89,6 +92,11 @@ typedef NS_ENUM(NSInteger, ZFPlayerState) {
  * 控制层传nil，默认使用ZFPlayerControlView(如自定义可传自定义的控制层)
  */
 - (void)playerControlView:(UIView *)controlView playerModel:(ZFPlayerModel *)playerModel;
+
+/**
+ 取消显示 控制层
+ */
+- (void)enableControlView:(BOOL)enable;
 
 /**
  *  自动播放，默认不自动播放
