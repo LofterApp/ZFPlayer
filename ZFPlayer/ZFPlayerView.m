@@ -1255,6 +1255,11 @@ typedef NS_ENUM(NSInteger, PanDirection){
 - (void)setState:(ZFPlayerState)state
 {
     _state = state;
+    
+    if ([self.delegate respondsToSelector:@selector(zf_playerState:)]) {
+        [self.delegate zf_playerState:state];
+    }
+    
     // 控制菊花显示、隐藏
     [self.controlView zf_playerActivity:state == ZFPlayerStateBuffering];
     if (state == ZFPlayerStatePlaying || state == ZFPlayerStateBuffering) {

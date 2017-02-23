@@ -27,20 +27,11 @@
 #import "ZFPlayerModel.h"
 #import "ZFPlayerControlViewDelegate.h"
 
-@protocol ZFPlayerDelegate <NSObject>
-@optional
-/** 返回按钮事件 */
-- (void)zf_playerBackAction;
-/** 下载视频 */
-- (void)zf_playerDownload:(NSString *)url;
-
-@end
-
 // playerLayer的填充模式（默认：等比例填充，直到一个维度到达区域边界）
 typedef NS_ENUM(NSInteger, ZFPlayerLayerGravity) {
-     ZFPlayerLayerGravityResize,           // 非均匀模式。两个维度完全填充至整个视图区域
-     ZFPlayerLayerGravityResizeAspect,     // 等比例填充，直到一个维度到达区域边界
-     ZFPlayerLayerGravityResizeAspectFill  // 等比例填充，直到填充满整个视图区域，其中一个维度的部分区域会被裁剪
+    ZFPlayerLayerGravityResize,           // 非均匀模式。两个维度完全填充至整个视图区域
+    ZFPlayerLayerGravityResizeAspect,     // 等比例填充，直到一个维度到达区域边界
+    ZFPlayerLayerGravityResizeAspectFill  // 等比例填充，直到填充满整个视图区域，其中一个维度的部分区域会被裁剪
 };
 
 // 播放器的几种状态
@@ -51,6 +42,17 @@ typedef NS_ENUM(NSInteger, ZFPlayerState) {
     ZFPlayerStateStopped,    // 停止播放
     ZFPlayerStatePause       // 暂停播放
 };
+
+@protocol ZFPlayerDelegate <NSObject>
+@optional
+/** 返回按钮事件 */
+- (void)zf_playerBackAction;
+/** 下载视频 */
+- (void)zf_playerDownload:(NSString *)url;
+/** 播放状态回调 */
+- (void)zf_playerState:(ZFPlayerState)state;
+
+@end
 
 @interface ZFPlayerView : UIView <ZFPlayerControlViewDelagate>
 
