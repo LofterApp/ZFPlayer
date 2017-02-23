@@ -1266,6 +1266,12 @@ typedef NS_ENUM(NSInteger, PanDirection){
     }
 }
 
+- (void)setMute:(BOOL)mute
+{
+    _mute = mute;
+    self.player.muted = mute;
+}
+
 /**
  *  根据playerItem，来添加移除观察者
  *
