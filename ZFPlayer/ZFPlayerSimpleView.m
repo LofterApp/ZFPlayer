@@ -914,6 +914,7 @@ typedef NS_ENUM(NSInteger, PanDirection){
         [self.delegate zf_playerCloseAction];
     } if (self.closeHandler) {
         self.closeHandler();
+        self.closeHandler = nil;
     } else {
         [self resetPlayer];
         [self removeFromSuperview];
