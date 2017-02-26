@@ -82,4 +82,42 @@
     }
 }
 
+- (void)cellClicked
+{
+    [[ZFPlayerSimpleView sharedPlayerView] pause];
+    // 当前正在播放 跳转进入 全屏页面
+    CGRect originFrame = [self convertRect:self.frame toView:nil];
+    ZFPlayerSimpleView *playerView = [ZFPlayerSimpleView sharedPlayerView];
+    playerView.loop = NO;
+    [[UIApplication sharedApplication].keyWindow addSubview:playerView];
+    [playerView setFrame:originFrame];
+    [UIView animateWithDuration:1.5 animations:^{
+        [playerView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.width.equalTo(@(ScreenWidth));
+            make.height.equalTo(@(ScreenHeight));
+            make.center.equalTo([UIApplication sharedApplication].keyWindow);
+        }];
+    } completion:^(BOOL finished) {
+        [playerView enableControlView:YES];
+        [playerView play];
+    }];
+    
+    [playerView setCloseHandler:^{
+        [UIView animateWithDuration:1.5 animations:^{
+            [[ZFPlayerSimpleView sharedPlayerView] setFrame:originFrame];
+        } completion:^(BOOL finished) {
+            ZFPlayerSimpleView *playerView = [ZFPlayerSimpleView sharedPlayerView];
+            playerView.loop = YES;
+            [self.picView addSubview:playerView];
+            [playerView setFrame:({
+                CGRect frame = playerView.frame;
+                frame.origin = CGPointZero;
+                frame;
+            })];
+            [playerView enableControlView:NO];
+            [playerView play];
+        }];
+    }];
+}
+
 @end

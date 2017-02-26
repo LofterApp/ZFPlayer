@@ -15,6 +15,8 @@
 		49CD65D11BF0C4EC0060DB9E /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49CD65D01BF0C4EC0060DB9E /* MediaPlayer.framework */; };
 		49F272801BF2330700FCC767 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 49F2727F1BF2330700FCC767 /* Info.plist */; };
 		6DFFA86AB7DE7145F8B2FDBB /* libPods-Player.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 15E3CE675A5AD72E88B7F01B /* libPods-Player.a */; };
+		A85DA7BB1E62CA9600AB8059 /* ZFPlayerSimpleControlView.m in Sources */ = {isa = PBXBuildFile; fileRef = A85DA7BA1E62CA9600AB8059 /* ZFPlayerSimpleControlView.m */; };
+		A85DA7BE1E63535F00AB8059 /* ZFPlayerSimpleView.m in Sources */ = {isa = PBXBuildFile; fileRef = A85DA7BD1E63535F00AB8059 /* ZFPlayerSimpleView.m */; };
 		CC220D4A1DB7B504001191C7 /* MMMaterialDesignSpinner.m in Sources */ = {isa = PBXBuildFile; fileRef = CC220D491DB7B504001191C7 /* MMMaterialDesignSpinner.m */; };
 		CC2877CC1D9B60760097CEDA /* UINavigationController+ZFPlayerRotation.m in Sources */ = {isa = PBXBuildFile; fileRef = CC2877C71D9B60760097CEDA /* UINavigationController+ZFPlayerRotation.m */; };
 		CC2877CD1D9B60760097CEDA /* UITabBarController+ZFPlayerRotation.m in Sources */ = {isa = PBXBuildFile; fileRef = CC2877C91D9B60760097CEDA /* UITabBarController+ZFPlayerRotation.m */; };
@@ -89,6 +91,10 @@
 		49CD65D01BF0C4EC0060DB9E /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		49F2727F1BF2330700FCC767 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5025702D2252268F74E00592 /* Pods-Player.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Player.release.xcconfig"; path = "Pods/Target Support Files/Pods-Player/Pods-Player.release.xcconfig"; sourceTree = "<group>"; };
+		A85DA7B91E62CA9600AB8059 /* ZFPlayerSimpleControlView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZFPlayerSimpleControlView.h; sourceTree = "<group>"; };
+		A85DA7BA1E62CA9600AB8059 /* ZFPlayerSimpleControlView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZFPlayerSimpleControlView.m; sourceTree = "<group>"; };
+		A85DA7BC1E63535F00AB8059 /* ZFPlayerSimpleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZFPlayerSimpleView.h; sourceTree = "<group>"; };
+		A85DA7BD1E63535F00AB8059 /* ZFPlayerSimpleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZFPlayerSimpleView.m; sourceTree = "<group>"; };
 		CC220D481DB7B504001191C7 /* MMMaterialDesignSpinner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMMaterialDesignSpinner.h; sourceTree = "<group>"; };
 		CC220D491DB7B504001191C7 /* MMMaterialDesignSpinner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMMaterialDesignSpinner.m; sourceTree = "<group>"; };
 		CC2877C61D9B60760097CEDA /* UINavigationController+ZFPlayerRotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UINavigationController+ZFPlayerRotation.h"; sourceTree = "<group>"; };
@@ -268,10 +274,14 @@
 				CC7FF6741DD5AFD000DA0009 /* ZFPlayerControlViewDelegate.h */,
 				CC2CC6381CA24D4B0028BBDD /* ZFPlayerView.h */,
 				CC2CC6391CA24D4B0028BBDD /* ZFPlayerView.m */,
+				A85DA7BC1E63535F00AB8059 /* ZFPlayerSimpleView.h */,
+				A85DA7BD1E63535F00AB8059 /* ZFPlayerSimpleView.m */,
 				CC6FF40B1DB9DFB300222AAC /* ZFPlayerModel.h */,
 				CC6FF40C1DB9DFB300222AAC /* ZFPlayerModel.m */,
 				CC2CC6351CA24D4B0028BBDD /* ZFPlayerControlView.h */,
 				CC2CC6361CA24D4B0028BBDD /* ZFPlayerControlView.m */,
+				A85DA7B91E62CA9600AB8059 /* ZFPlayerSimpleControlView.h */,
+				A85DA7BA1E62CA9600AB8059 /* ZFPlayerSimpleControlView.m */,
 				CC220D481DB7B504001191C7 /* MMMaterialDesignSpinner.h */,
 				CC220D491DB7B504001191C7 /* MMMaterialDesignSpinner.m */,
 				CC7D5E911D59AAAC000AC18A /* ASValueTrackingSlider.h */,
@@ -553,6 +563,7 @@
 			files = (
 				CC725C2D1C894D2500C3EAF2 /* ZFVideoListViewController.m in Sources */,
 				CC6C7AE51C9BDFE90000AD58 /* MoviePlayerViewController.m in Sources */,
+				A85DA7BE1E63535F00AB8059 /* ZFPlayerSimpleView.m in Sources */,
 				CC69BD1F1DD2DC1B00019AC6 /* UIImageView+ZFCache.m in Sources */,
 				4947F7921BE996AC003093C8 /* AppDelegate.m in Sources */,
 				CCE1C13B1C9AA11F004C95AC /* ZFVideoModel.m in Sources */,
@@ -560,6 +571,7 @@
 				CC2CC63F1CA24D4B0028BBDD /* ZFPlayerView.m in Sources */,
 				CC2CC63B1CA24D4B0028BBDD /* ZFBrightnessView.m in Sources */,
 				CC8693471CC9BF5E0037E71B /* ZFPVideoResolution.m in Sources */,
+				A85DA7BB1E62CA9600AB8059 /* ZFPlayerSimpleControlView.m in Sources */,
 				CC7D5E951D59AAAC000AC18A /* ASValueTrackingSlider.m in Sources */,
 				CC2CC63D1CA24D4B0028BBDD /* ZFPlayerControlView.m in Sources */,
 				CC220D4A1DB7B504001191C7 /* MMMaterialDesignSpinner.m in Sources */,

@@ -38,4 +38,6 @@ typedef void(^PlayBtnCallBackBlock)(UIButton *);
 /** 播放按钮block */
 @property (nonatomic, copy  ) PlayBtnCallBackBlock          playBlock;
 
+- (void)cellClicked;
+
 @end

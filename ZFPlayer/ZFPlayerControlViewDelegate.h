@@ -38,6 +38,8 @@
 - (void)zf_controlView:(UIView *)controlView playAction:(UIButton *)sender;
 /** 全屏按钮事件 */
 - (void)zf_controlView:(UIView *)controlView fullScreenAction:(UIButton *)sender;
+/** 静音按钮事件 */
+- (void)zf_controlView:(UIView *)controlView muteAction:(UIButton *)sender;
 /** 锁定屏幕方向按钮时间 */
 - (void)zf_controlView:(UIView *)controlView lockScreenAction:(UIButton *)sender;
 /** 重播按钮事件 */

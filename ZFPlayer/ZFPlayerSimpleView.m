@@ -1,27 +1,12 @@
 //
-//  ZFPlayerView.m
+//  ZFPlayerSimpleView.m
+//  Player
 //
-// Copyright (c) 2016年 任子丰 ( http://github.com/renzifeng )
+//  Created by zmm on 26/2/2017.
+//  Copyright © 2017 . All rights reserved.
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
 
-#import "ZFPlayerView.h"
+#import "ZFPlayerSimpleView.h"
 #import <AVFoundation/AVFoundation.h>
 #import <MediaPlayer/MediaPlayer.h>
 #import "UIView+CustomControlView.h"
@@ -37,38 +22,26 @@ typedef NS_ENUM(NSInteger, PanDirection){
     PanDirectionVerticalMoved    // 纵向移动
 };
 
-@interface ZFPlayerView () <UIGestureRecognizerDelegate,UIAlertViewDelegate>
+@interface ZFPlayerSimpleView () <UIGestureRecognizerDelegate>
 
 /** 播放属性 */
 @property (nonatomic, strong) AVPlayer               *player;
 @property (nonatomic, strong) AVPlayerItem           *playerItem;
 @property (nonatomic, strong) AVURLAsset             *urlAsset;
-@property (nonatomic, strong) AVAssetImageGenerator  *imageGenerator;
 /** playerLayer */
 @property (nonatomic, strong) AVPlayerLayer          *playerLayer;
 @property (nonatomic, strong) id                     timeObserve;
-/** 滑杆 */
-@property (nonatomic, strong) UISlider               *volumeViewSlider; 
 /** 用来保存快进的总时长 */
 @property (nonatomic, assign) CGFloat                sumTime;
-/** 定义一个实例变量，保存枚举值 */
-@property (nonatomic, assign) PanDirection           panDirection;
 /** 播发器的几种状态 */
 @property (nonatomic, assign) ZFPlayerState          state;
-/** 是否为全屏 */
-@property (nonatomic, assign) BOOL                   isFullScreen;
-/** 是否锁定屏幕方向 */
-@property (nonatomic, assign) BOOL                   isLocked;
-/** 是否在调节音量*/
-@property (nonatomic, assign) BOOL                   isVolume;
+
 /** 是否被用户暂停 */
 @property (nonatomic, assign) BOOL                   isPauseByUser;
 /** 是否播放本地文件 */
 @property (nonatomic, assign) BOOL                   isLocalVideo;
 /** slider上次的值 */
 @property (nonatomic, assign) CGFloat                sliderLastValue;
-/** 是否再次设置URL播放视频 */
-@property (nonatomic, assign) BOOL                   repeatToPlay;
 /** 播放完了*/
 @property (nonatomic, assign) BOOL                   playDidEnd;
 /** 进入后台*/
@@ -77,40 +50,25 @@ typedef NS_ENUM(NSInteger, PanDirection){
 @property (nonatomic, assign) BOOL                   isAutoPlay;
 /** 单击 */
 @property (nonatomic, strong) UITapGestureRecognizer *singleTap;
-/** 双击 */
-@property (nonatomic, strong) UITapGestureRecognizer *doubleTap;
 /** 视频URL的数组 */
 @property (nonatomic, strong) NSArray                *videoURLArray;
 /** slider预览图 */
 @property (nonatomic, strong) UIImage                *thumbImg;
-/** 亮度view */
-@property (nonatomic, strong) ZFBrightnessView       *brightnessView;
 
 #pragma mark - UITableViewCell PlayerView
-
-/** palyer加到tableView */
-@property (nonatomic, strong) UITableView            *tableView;
-/** player所在cell的indexPath */
-@property (nonatomic, strong) NSIndexPath            *indexPath;
-/** ViewController中页面是否消失 */
-@property (nonatomic, assign) BOOL                   viewDisappear;
-/** 是否在cell上播放video */
-@property (nonatomic, assign) BOOL                   isCellVideo;
-/** 是否缩小视频在底部 */
-@property (nonatomic, assign) BOOL                   isBottomVideo;
-/** 是否切换分辨率*/
-@property (nonatomic, assign) BOOL                   isChangeResolution;
 /** 是否正在拖拽 */
 @property (nonatomic, assign) BOOL                   isDragged;
+
+/** 是否为全屏 */
+@property (nonatomic, assign) BOOL                    isFullScreen;
 
 @property (nonatomic, strong) UIView                 *controlView;
 @property (nonatomic, strong) ZFPlayerModel          *playerModel;
 @property (nonatomic, assign) NSInteger              seekTime;
 @property (nonatomic, strong) NSURL                  *videoURL;
-@property (nonatomic, strong) NSDictionary           *resolutionDic;
 @end
 
-@implementation ZFPlayerView
+@implementation ZFPlayerSimpleView
 
 #pragma mark - life Cycle
 
@@ -138,14 +96,11 @@ typedef NS_ENUM(NSInteger, PanDirection){
  */
 - (void)initializeThePlayer
 {
-    self.cellPlayerOnCenter = YES;;
 }
 
 - (void)dealloc
 {
     self.playerItem = nil;
-    self.tableView  = nil;
-    ZFPlayerShared.isLockScreen = NO;
     [self.controlView zf_playerCancelAutoFadeOutControlView];
     // 移除通知
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -162,7 +117,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
  */
 - (void)resetToPlayNewURL
 {
-    self.repeatToPlay = YES;
     [self resetPlayer];
 }
 
@@ -210,10 +164,10 @@ typedef NS_ENUM(NSInteger, PanDirection){
  */
 + (instancetype)sharedPlayerView
 {
-    static ZFPlayerView *playerView = nil;
+    static ZFPlayerSimpleView *playerView = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        playerView = [[ZFPlayerView alloc] init];
+        playerView = [[ZFPlayerSimpleView alloc] init];
     });
     return playerView;
 }
@@ -222,12 +176,22 @@ typedef NS_ENUM(NSInteger, PanDirection){
 {
     if (!controlView) {
         // 指定默认控制层
-        ZFPlayerControlView *defaultControlView = [[ZFPlayerControlView alloc] init];
+        ZFPlayerSimpleControlView *defaultControlView = [[ZFPlayerSimpleControlView alloc] init];
         self.controlView = defaultControlView;
     } else {
         self.controlView = controlView;
     }
     self.playerModel = playerModel;
+}
+
+- (void)enableControlView:(BOOL)enable
+{
+    [self.controlView setAlpha:enable ? 1 : 0];
+    [self setUserInteractionEnabled:enable];
+    if (!self.controlView && enable) {
+        ZFPlayerSimpleControlView *defaultControlView = [[ZFPlayerSimpleControlView alloc] init];
+        self.controlView = defaultControlView;
+    }
 }
 
 /**
@@ -276,27 +240,17 @@ typedef NS_ENUM(NSInteger, PanDirection){
     // 替换PlayerItem为nil
     [self.player replaceCurrentItemWithPlayerItem:nil];
     // 把player置为nil
-    self.imageGenerator = nil;
     self.player         = nil;
-    if (self.isChangeResolution) { // 切换分辨率
-        [self.controlView zf_playerResetControlViewForResolution];
-        self.isChangeResolution = NO;
-    }else { // 重置控制层View
-        [self.controlView zf_playerResetControlView];
-    }
+    // 重置控制层View
+    [self.controlView zf_playerResetControlView];
     self.controlView   = nil;
-    // 非重播时，移除当前playerView
-    if (!self.repeatToPlay) { [self removeFromSuperview]; }
-    // 底部播放video改为NO
-    self.isBottomVideo = NO;
-    // cell上播放视频 && 不是重播时
-    if (self.isCellVideo && !self.repeatToPlay) {
-        // vicontroller中页面消失
-        self.viewDisappear = YES;
-        self.isCellVideo   = NO;
-        self.tableView     = nil;
-        self.indexPath     = nil;
-    }
+    // 移除当前playerView
+    [self removeFromSuperview];
+    
+    self.closeHandler = nil;
+    self.loop = NO;
+    self.mute = YES;
+    self.isFullScreen = NO;
 }
 
 /**
@@ -304,7 +258,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
  */
 - (void)resetToPlayNewVideo:(ZFPlayerModel *)playerModel
 {
-    self.repeatToPlay = YES;
     [self resetPlayer];
     self.playerModel = playerModel;
     [self configZFPlayer];
@@ -319,11 +272,9 @@ typedef NS_ENUM(NSInteger, PanDirection){
     if (self.state == ZFPlayerStatePause) { self.state = ZFPlayerStatePlaying; }
     self.isPauseByUser = NO;
     [_player play];
-    if (!self.isBottomVideo) {
-        // 显示控制层
-        [self.controlView zf_playerCancelAutoFadeOutControlView];
-        [self.controlView zf_playerShowControlView];
-    }
+    // 显示控制层
+    [self.controlView zf_playerCancelAutoFadeOutControlView];
+    [self.controlView zf_playerShowControlView];
 }
 
 /**
@@ -338,29 +289,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
 }
 
 #pragma mark - Private Method
-
-/**
- *  用于cell上播放player
- *
- *  @param tableView tableView
- *  @param indexPath indexPath
- */
-- (void)cellVideoWithTableView:(UITableView *)tableView
-                   AtIndexPath:(NSIndexPath *)indexPath
-{
-    // 如果页面没有消失，并且playerItem有值，需要重置player(其实就是点击播放其他视频时候)
-    if (!self.viewDisappear && self.playerItem) { [self resetPlayer]; }
-    // 在cell上播放视频
-    self.isCellVideo      = YES;
-    // viewDisappear改为NO
-    self.viewDisappear    = NO;
-    // 设置tableview
-    self.tableView        = tableView;
-    // 设置indexPath
-    self.indexPath        = indexPath;
-    // 在cell播放
-    [self.controlView zf_playerCellPlay];
-}
 
 /**
  *  设置Player相关参数
@@ -386,18 +314,13 @@ typedef NS_ENUM(NSInteger, PanDirection){
     // 添加播放进度计时器
     [self createTimer];
     
-    // 获取系统音量
-    [self configureVolume];
-    
     // 本地文件不设置ZFPlayerStateBuffering状态
     if ([self.videoURL.scheme isEqualToString:@"file"]) {
         self.state = ZFPlayerStatePlaying;
         self.isLocalVideo = YES;
-        [self.controlView zf_playerDownloadBtnState:NO];
     } else {
         self.state = ZFPlayerStateBuffering;
         self.isLocalVideo = NO;
-        [self.controlView zf_playerDownloadBtnState:YES];
     }
     // 开始播放
     [self play];
@@ -416,19 +339,8 @@ typedef NS_ENUM(NSInteger, PanDirection){
     self.singleTap.numberOfTapsRequired    = 1;
     [self addGestureRecognizer:self.singleTap];
     
-    // 双击(播放/暂停)
-    self.doubleTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(doubleTapAction:)];
-    self.doubleTap.delegate                = self;
-    self.doubleTap.numberOfTouchesRequired = 1; //手指数
-    self.doubleTap.numberOfTapsRequired    = 2;
-
-    [self addGestureRecognizer:self.doubleTap];
-
     // 解决点击当前view时候响应其他控件事件
     [self.singleTap setDelaysTouchesBegan:YES];
-    [self.doubleTap setDelaysTouchesBegan:YES];
-    // 双击失败响应单击事件
-    [self.singleTap requireGestureRecognizerToFail:self.doubleTap];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
@@ -439,7 +351,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
             [self performSelector:@selector(singleTapAction:) withObject:@(NO) ];
         } else if (touch.tapCount == 2) {
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(singleTapAction:) object:nil];
-            [self doubleTapAction:touch.gestureRecognizers.lastObject];
         }
     }
 }
@@ -459,62 +370,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
     }];
 }
 
-/**
- *  获取系统音量
- */
-- (void)configureVolume
-{
-    MPVolumeView *volumeView = [[MPVolumeView alloc] init];
-    _volumeViewSlider = nil;
-    for (UIView *view in [volumeView subviews]){
-        if ([view.class.description isEqualToString:@"MPVolumeSlider"]){
-            _volumeViewSlider = (UISlider *)view;
-            break;
-        }
-    }
-    
-    // 使用这个category的应用不会随着手机静音键打开而静音，可在手机静音下播放声音
-    NSError *setCategoryError = nil;
-    BOOL success = [[AVAudioSession sharedInstance]
-                    setCategory: AVAudioSessionCategoryPlayback
-                    error: &setCategoryError];
-    
-    if (!success) { /* handle the error in setCategoryError */ }
-    
-    // 监听耳机插入和拔掉通知
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListenerCallback:) name:AVAudioSessionRouteChangeNotification object:nil];
-}
-
-/**
- *  耳机插入、拔出事件
- */
-- (void)audioRouteChangeListenerCallback:(NSNotification*)notification
-{
-    NSDictionary *interuptionDict = notification.userInfo;
-    
-    NSInteger routeChangeReason = [[interuptionDict valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
-    
-    switch (routeChangeReason) {
-            
-        case AVAudioSessionRouteChangeReasonNewDeviceAvailable:
-            // 耳机插入
-            break;
-            
-        case AVAudioSessionRouteChangeReasonOldDeviceUnavailable:
-        {
-            // 耳机拔掉
-            // 拔掉耳机继续播放
-            [self play];
-        }
-            break;
-            
-        case AVAudioSessionRouteChangeReasonCategoryChange:
-            // called at start - also when other audio wants to play
-            NSLog(@"AVAudioSessionRouteChangeReasonCategoryChange");
-            break;
-    }
-}
-
 #pragma mark - KVO
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -528,20 +383,12 @@ typedef NS_ENUM(NSInteger, PanDirection){
                 // 添加playerLayer到self.layer
                 [self.layer insertSublayer:self.playerLayer atIndex:0];
                 self.state = ZFPlayerStatePlaying;
-                // 加载完成后，再添加平移手势
-                // 添加平移手势，用来控制音量、亮度、快进快退
-                UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(panDirection:)];
-                panRecognizer.delegate = self;
-                [panRecognizer setMaximumNumberOfTouches:1];
-                [panRecognizer setDelaysTouchesBegan:YES];
-                [panRecognizer setDelaysTouchesEnded:YES];
-                [panRecognizer setCancelsTouchesInView:YES];
-                [self addGestureRecognizer:panRecognizer];
                 
                 // 跳到xx秒播放视频
                 if (self.seekTime) {
                     [self seekToTime:self.seekTime completionHandler:nil];
                 }
+                self.player.muted = self.mute;
             } else if (self.player.currentItem.status == AVPlayerItemStatusFailed) {
                 self.state = ZFPlayerStateFailed;
             }
@@ -569,76 +416,9 @@ typedef NS_ENUM(NSInteger, PanDirection){
             }
             
         }
-    } else if (object == self.tableView) {
-        if ([keyPath isEqualToString:kZFPlayerViewContentOffset]) {
-            if (self.isFullScreen) { return; }
-            // 当tableview滚动时处理playerView的位置
-            [self handleScrollOffsetWithDict:change];
-        }
     }
 }
 
-#pragma mark - tableViewContentOffset
-
-/**
- *  KVO TableViewContentOffset
- *
- *  @param dict void
- */
-- (void)handleScrollOffsetWithDict:(NSDictionary*)dict
-{
-    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:self.indexPath];
-    NSArray *visableCells = self.tableView.visibleCells;
-    if ([visableCells containsObject:cell]) {
-        // 在显示中
-        [self updatePlayerViewToCell];
-    } else {
-        if (self.stopPlayWhileCellNotVisable) {
-            [self resetPlayer];
-        } else {
-            // 在底部
-            [self updatePlayerViewToBottom];
-        }
-    }
-}
-
-/**
- *  缩小到底部，显示小视频
- */
-- (void)updatePlayerViewToBottom
-{
-    if (self.isBottomVideo) { return; }
-    self.isBottomVideo = YES;
-    if (self.playDidEnd) { // 如果播放完了，滑动到小屏bottom位置时，直接resetPlayer
-        self.repeatToPlay = NO;
-        self.playDidEnd   = NO;
-        [self resetPlayer];
-        return;
-    }
-    [self layoutIfNeeded];
-    [[UIApplication sharedApplication].keyWindow addSubview:self];
-    [self mas_remakeConstraints:^(MASConstraintMaker *make) {
-        CGFloat width = ScreenWidth*0.5-20;
-        CGFloat height = (self.bounds.size.height / self.bounds.size.width);
-        make.width.mas_equalTo(width);
-        make.height.equalTo(self.mas_width).multipliedBy(height);
-        make.trailing.mas_equalTo(-10);
-        make.bottom.mas_equalTo(-self.tableView.contentInset.bottom-10);
-    }];
-    // 小屏播放
-    [self.controlView zf_playerBottomShrinkPlay];
-}
-
-/**
- *  回到cell显示
- */
-- (void)updatePlayerViewToCell
-{
-    if (!self.isBottomVideo) { return; }
-    self.isBottomVideo = NO;
-    [self setOrientationPortraitConstraint];
-    [self.controlView zf_playerCellPlay];
-}
 
 /**
  *  设置横屏的约束
@@ -646,7 +426,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
 - (void)setOrientationLandscapeConstraint:(UIInterfaceOrientation)orientation
 {
     [self toOrientation:orientation];
-    self.isFullScreen = YES;
 }
 
 /**
@@ -654,21 +433,9 @@ typedef NS_ENUM(NSInteger, PanDirection){
  */
 - (void)setOrientationPortraitConstraint
 {
-    if (self.isCellVideo) {
-        UITableViewCell * cell = [self.tableView cellForRowAtIndexPath:self.indexPath];
-        NSArray *visableCells = self.tableView.visibleCells;
-        self.isBottomVideo = NO;
-        if (![visableCells containsObject:cell]) {
-            [self updatePlayerViewToBottom];
-        } else {
-            [self addPlayerToFatherView:self.playerModel.fatherView];
-        }
-    } else {
-        [self addPlayerToFatherView:self.playerModel.fatherView];
-    }
+    [self addPlayerToFatherView:self.playerModel.fatherView];
     
     [self toOrientation:UIInterfaceOrientationPortrait];
-    self.isFullScreen = NO;
 }
 
 - (void)toOrientation:(UIInterfaceOrientation)orientation
@@ -752,8 +519,10 @@ typedef NS_ENUM(NSInteger, PanDirection){
 - (void)onDeviceOrientationChange
 {
     if (!self.player) { return; }
-    if (ZFPlayerShared.isLockScreen) { return; }
     if (self.didEnterBackground) { return; };
+    if (!self.isFullScreen) {
+        return;
+    }
     UIDeviceOrientation orientation = [UIDevice currentDevice].orientation;
     UIInterfaceOrientation interfaceOrientation = (UIInterfaceOrientation)orientation;
     if (orientation == UIDeviceOrientationFaceUp || orientation == UIDeviceOrientationFaceDown || orientation == UIDeviceOrientationUnknown ) { return; }
@@ -763,29 +532,15 @@ typedef NS_ENUM(NSInteger, PanDirection){
         }
             break;
         case UIInterfaceOrientationPortrait:{
-            if (self.isFullScreen) {
-                [self toOrientation:UIInterfaceOrientationPortrait];
-                
-            }
+            [self toOrientation:UIInterfaceOrientationPortrait];
         }
             break;
         case UIInterfaceOrientationLandscapeLeft:{
-            if (self.isFullScreen == NO) {
-                [self toOrientation:UIInterfaceOrientationLandscapeLeft];
-                self.isFullScreen = YES;
-            } else {
-                [self toOrientation:UIInterfaceOrientationLandscapeLeft];
-            }
-            
+            [self toOrientation:UIInterfaceOrientationLandscapeLeft];
         }
             break;
         case UIInterfaceOrientationLandscapeRight:{
-            if (self.isFullScreen == NO) {
-                [self toOrientation:UIInterfaceOrientationLandscapeRight];
-                self.isFullScreen = YES;
-            } else {
-                [self toOrientation:UIInterfaceOrientationLandscapeRight];
-            }
+            [self toOrientation:UIInterfaceOrientationLandscapeRight];
         }
             break;
         default:
@@ -801,56 +556,14 @@ typedef NS_ENUM(NSInteger, PanDirection){
         UIInterfaceOrientation currentOrientation = [UIApplication sharedApplication].statusBarOrientation;
         if (currentOrientation == UIInterfaceOrientationPortrait) {
             [self setOrientationPortraitConstraint];
-            if (self.cellPlayerOnCenter) {
-                [self.tableView scrollToRowAtIndexPath:self.indexPath atScrollPosition:UITableViewScrollPositionMiddle animated:NO];
-            }
-            [self.brightnessView removeFromSuperview];
-            [[UIApplication sharedApplication].keyWindow addSubview:self.brightnessView];
-            [self.brightnessView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                make.width.height.mas_equalTo(155);
-                make.leading.mas_equalTo((ScreenWidth-155)/2);
-                make.top.mas_equalTo((ScreenHeight-155)/2);
-            }];
         } else {
             if (currentOrientation == UIInterfaceOrientationLandscapeRight) {
                 [self toOrientation:UIInterfaceOrientationLandscapeRight];
             } else if (currentOrientation == UIDeviceOrientationLandscapeLeft){
                 [self toOrientation:UIInterfaceOrientationLandscapeLeft];
             }
-            [self.brightnessView removeFromSuperview];
-            [self addSubview:self.brightnessView];
-            [self.brightnessView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                make.center.mas_equalTo(self);
-                make.width.height.mas_equalTo(155);
-            }];
-            
         }
     }
-}
-
-/**
- *  锁定屏幕方向按钮
- *
- *  @param sender UIButton
- */
-- (void)lockScreenAction:(UIButton *)sender
-{
-    sender.selected             = !sender.selected;
-    self.isLocked               = sender.selected;
-    // 调用AppDelegate单例记录播放状态是否锁屏，在TabBarController设置哪些页面支持旋转
-    ZFPlayerShared.isLockScreen = sender.selected;
-}
-
-/**
- *  解锁屏幕方向锁定
- */
-- (void)unLockTheScreen
-{
-    // 调用AppDelegate单例记录播放状态是否锁屏
-    ZFPlayerShared.isLockScreen = NO;
-    [self.controlView zf_playerLockBtnState:NO];
-    self.isLocked = NO;
-    [self interfaceOrientation:UIInterfaceOrientationPortrait];
 }
 
 #pragma mark - 缓冲较差时候
@@ -880,7 +593,7 @@ typedef NS_ENUM(NSInteger, PanDirection){
         // 如果执行了play还是没有播放则说明还没有缓存好，则再次缓存一段时间
         isBuffering = NO;
         if (!self.playerItem.isPlaybackLikelyToKeepUp) { [self bufferingSomeSecond]; }
-       
+        
     });
 }
 
@@ -909,57 +622,8 @@ typedef NS_ENUM(NSInteger, PanDirection){
  */
 - (void)singleTapAction:(UIGestureRecognizer *)gesture
 {
-    if ([gesture isKindOfClass:[NSNumber class]] && ![(id)gesture boolValue]) {
-         [self _fullScreenAction];
-         return;
-    }
     if (gesture.state == UIGestureRecognizerStateRecognized) {
-        if (self.isBottomVideo && !self.isFullScreen) { [self _fullScreenAction]; }
-        else {
-            if (self.playDidEnd) { return; }
-            else { [self.controlView zf_playerShowControlView]; }
-        }
-    }
-}
-
-/**
- *  双击播放/暂停
- *
- *  @param gesture UITapGestureRecognizer
- */
-- (void)doubleTapAction:(UIGestureRecognizer *)gesture
-{
-    if (self.playDidEnd) { return;  }
-    // 显示控制层
-    [self.controlView zf_playerCancelAutoFadeOutControlView];
-    [self.controlView zf_playerShowControlView];
-    if (self.isPauseByUser) { [self play]; }
-    else { [self pause]; }
-    if (!self.isAutoPlay) {
-        self.isAutoPlay = YES;
-        [self configZFPlayer];
-    }
-}
-
-/** 全屏 */
-- (void)_fullScreenAction
-{
-    if (ZFPlayerShared.isLockScreen) {
-        [self unLockTheScreen];
-        return;
-    }
-    if (self.isFullScreen) {
-        [self interfaceOrientation:UIInterfaceOrientationPortrait];
-        self.isFullScreen = NO;
-        return;
-    } else {
-        UIDeviceOrientation orientation = [UIDevice currentDevice].orientation;
-        if (orientation == UIDeviceOrientationLandscapeRight) {
-            [self interfaceOrientation:UIInterfaceOrientationLandscapeLeft];
-        } else {
-            [self interfaceOrientation:UIInterfaceOrientationLandscapeRight];
-        }
-        self.isFullScreen = YES;
+        [self.controlView zf_playerShowControlView];
     }
 }
 
@@ -972,16 +636,14 @@ typedef NS_ENUM(NSInteger, PanDirection){
  */
 - (void)moviePlayDidEnd:(NSNotification *)notification
 {
+    if (self.loop) {
+        [self seekToTime:0 completionHandler:nil];
+        return;
+    }
     self.state = ZFPlayerStateStopped;
-    if (self.isBottomVideo && !self.isFullScreen) { // 播放完了，如果是在小屏模式 && 在bottom位置，直接关闭播放器
-        self.repeatToPlay = NO;
-        self.playDidEnd   = NO;
-        [self resetPlayer];
-    } else {
-        if (!self.isDragged) { // 如果不是拖拽中，直接结束播放
-            self.playDidEnd = YES;
-            [self.controlView zf_playerPlayEnd];
-        }
+    if (!self.isDragged) { // 如果不是拖拽中，直接结束播放
+        self.playDidEnd = YES;
+        [self.controlView zf_playerPlayEnd];
     }
 }
 
@@ -991,8 +653,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
 - (void)appDidEnterBackground
 {
     self.didEnterBackground     = YES;
-    // 退到后台锁定屏幕方向
-    ZFPlayerShared.isLockScreen = YES;
     [_player pause];
     self.state                  = ZFPlayerStatePause;
 }
@@ -1003,8 +663,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
 - (void)appDidEnterPlayground
 {
     self.didEnterBackground     = NO;
-    // 根据是否锁定屏幕方向 来恢复单例里锁定屏幕的方向
-    ZFPlayerShared.isLockScreen = self.isLocked;
     if (!self.isPauseByUser) {
         self.state         = ZFPlayerStatePlaying;
         self.isPauseByUser = NO;
@@ -1058,121 +716,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
     CGFloat totalDuration       = CMTimeGetSeconds(duration);
     return timeInterval/totalDuration;
 }
-#pragma mark - UIPanGestureRecognizer手势方法
-
-/**
- *  pan手势事件
- *
- *  @param pan UIPanGestureRecognizer
- */
-- (void)panDirection:(UIPanGestureRecognizer *)pan
-{
-    //根据在view上Pan的位置，确定是调音量还是亮度
-    CGPoint locationPoint = [pan locationInView:self];
-    
-    // 我们要响应水平移动和垂直移动
-    // 根据上次和本次移动的位置，算出一个速率的point
-    CGPoint veloctyPoint = [pan velocityInView:self];
-    
-    // 判断是垂直移动还是水平移动
-    switch (pan.state) {
-        case UIGestureRecognizerStateBegan:{ // 开始移动
-            // 使用绝对值来判断移动的方向
-            CGFloat x = fabs(veloctyPoint.x);
-            CGFloat y = fabs(veloctyPoint.y);
-            if (x > y) { // 水平移动
-                // 取消隐藏
-                self.panDirection = PanDirectionHorizontalMoved;
-                // 给sumTime初值
-                CMTime time       = self.player.currentTime;
-                self.sumTime      = time.value/time.timescale;
-            }
-            else if (x < y){ // 垂直移动
-                self.panDirection = PanDirectionVerticalMoved;
-                // 开始滑动的时候,状态改为正在控制音量
-                if (locationPoint.x > self.bounds.size.width / 2) {
-                    self.isVolume = YES;
-                }else { // 状态改为显示亮度调节
-                    self.isVolume = NO;
-                }
-            }
-            break;
-        }
-        case UIGestureRecognizerStateChanged:{ // 正在移动
-            switch (self.panDirection) {
-                case PanDirectionHorizontalMoved:{
-                    [self horizontalMoved:veloctyPoint.x]; // 水平移动的方法只要x方向的值
-                    break;
-                }
-                case PanDirectionVerticalMoved:{
-                    [self verticalMoved:veloctyPoint.y]; // 垂直移动方法只要y方向的值
-                    break;
-                }
-                default:
-                    break;
-            }
-            break;
-        }
-        case UIGestureRecognizerStateEnded:{ // 移动停止
-            // 移动结束也需要判断垂直或者平移
-            // 比如水平移动结束时，要快进到指定位置，如果这里没有判断，当我们调节音量完之后，会出现屏幕跳动的bug
-            switch (self.panDirection) {
-                case PanDirectionHorizontalMoved:{
-                    self.isPauseByUser = NO;
-                    [self seekToTime:self.sumTime completionHandler:nil];
-                    // 把sumTime滞空，不然会越加越多
-                    self.sumTime = 0;
-                    break;
-                }
-                case PanDirectionVerticalMoved:{
-                    // 垂直移动结束后，把状态改为不再控制音量
-                    self.isVolume = NO;
-                    break;
-                }
-                default:
-                    break;
-            }
-            break;
-        }
-        default:
-            break;
-    }
-}
-
-/**
- *  pan垂直移动的方法
- *
- *  @param value void
- */
-- (void)verticalMoved:(CGFloat)value
-{
-    self.isVolume ? (self.volumeViewSlider.value -= value / 10000) : ([UIScreen mainScreen].brightness -= value / 10000);
-}
-
-/**
- *  pan水平移动的方法
- *
- *  @param value void
- */
-- (void)horizontalMoved:(CGFloat)value
-{
-    // 每次滑动需要叠加时间
-    self.sumTime += value / 200;
-    
-    // 需要限定sumTime的范围
-    CMTime totalTime           = self.playerItem.duration;
-    CGFloat totalMovieDuration = (CGFloat)totalTime.value/totalTime.timescale;
-    if (self.sumTime > totalMovieDuration) { self.sumTime = totalMovieDuration;}
-    if (self.sumTime < 0) { self.sumTime = 0; }
-    
-    BOOL style = false;
-    if (value > 0) { style = YES; }
-    if (value < 0) { style = NO; }
-    if (value == 0) { return; }
-    
-    self.isDragged = YES;
-    [self.controlView zf_playerDraggedTime:self.sumTime totalTime:totalMovieDuration isForward:style hasPreview:NO];
-}
 
 /**
  *  根据时长求出字符串
@@ -1195,23 +738,18 @@ typedef NS_ENUM(NSInteger, PanDirection){
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
     if ([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
-        if ((self.isCellVideo && !self.isFullScreen) || self.playDidEnd || self.isLocked){
-            return NO;
-        }
-    }
-    if ([gestureRecognizer isKindOfClass:[UITapGestureRecognizer class]]) {
-        if (self.isBottomVideo && !self.isFullScreen) {
+        if (self.playDidEnd){
             return NO;
         }
     }
     if ([touch.view isKindOfClass:[UISlider class]]) {
         return NO;
     }
-
+    
     return YES;
 }
 
-#pragma mark - Setter 
+#pragma mark - Setter
 
 /**
  *  videoURL的setter方法
@@ -1222,8 +760,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
 {
     _videoURL = videoURL;
     
-    // 每次加载视频URL都设置重播为NO
-    self.repeatToPlay = NO;
     self.playDidEnd   = NO;
     
     // 添加通知
@@ -1260,6 +796,13 @@ typedef NS_ENUM(NSInteger, PanDirection){
     }
 }
 
+- (void)setMute:(BOOL)mute
+{
+    _mute = mute;
+    self.player.muted = mute;
+    [self.controlView zf_playerMute:mute];
+}
+
 /**
  *  根据playerItem，来添加移除观察者
  *
@@ -1268,7 +811,7 @@ typedef NS_ENUM(NSInteger, PanDirection){
 - (void)setPlayerItem:(AVPlayerItem *)playerItem
 {
     if (_playerItem == playerItem) {return;}
-
+    
     if (_playerItem) {
         [[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:_playerItem];
         [_playerItem removeObserver:self forKeyPath:@"status"];
@@ -1286,21 +829,6 @@ typedef NS_ENUM(NSInteger, PanDirection){
         // 缓冲区有足够数据可以播放了
         [playerItem addObserver:self forKeyPath:@"playbackLikelyToKeepUp" options:NSKeyValueObservingOptionNew context:nil];
     }
-}
-
-/**
- *  根据tableview的值来添加、移除观察者
- *
- *  @param tableView tableView 
- */
-- (void)setTableView:(UITableView *)tableView
-{
-    if (_tableView == tableView) { return; }
-    if (_tableView) {
-        [_tableView removeObserver:self forKeyPath:kZFPlayerViewContentOffset];
-    }
-    _tableView = tableView;
-    if (tableView) { [tableView addObserver:self forKeyPath:kZFPlayerViewContentOffset options:NSKeyValueObservingOptionNew context:nil]; }
 }
 
 /**
@@ -1326,27 +854,12 @@ typedef NS_ENUM(NSInteger, PanDirection){
     }
 }
 
-/**
- *  是否有下载功能
- */
-- (void)setHasDownload:(BOOL)hasDownload
-{
-    _hasDownload = hasDownload;
-    [self.controlView zf_playerHasDownloadFunction:hasDownload];
-}
-
-- (void)setResolutionDic:(NSDictionary *)resolutionDic
-{
-    _resolutionDic = resolutionDic;
-    [self.controlView zf_playerResolutionArray:[resolutionDic allKeys]];
-    self.videoURLArray = [resolutionDic allValues];
-}
-
 - (void)setControlView:(UIView *)controlView
 {
     if (_controlView) { return; }
     _controlView = controlView;
     controlView.delegate = self;
+    [controlView zf_playerMute:_mute];
     [self addSubview:controlView];
     [controlView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.leading.trailing.bottom.equalTo(self);
@@ -1357,35 +870,15 @@ typedef NS_ENUM(NSInteger, PanDirection){
 {
     _playerModel = playerModel;
     NSCAssert(playerModel.fatherView, @"请指定playerView的faterView");
-
+    
     if (playerModel.seekTime) { self.seekTime = playerModel.seekTime; }
     [self.controlView zf_playerModel:playerModel];
-
-    if (playerModel.tableView && playerModel.indexPath && playerModel.videoURL) {
-        [self cellVideoWithTableView:playerModel.tableView AtIndexPath:playerModel.indexPath];
-        if (playerModel.resolutionDic) { self.resolutionDic = playerModel.resolutionDic; }
-    }
+    
     [self addPlayerToFatherView:playerModel.fatherView];
     self.videoURL = playerModel.videoURL;
 }
 
 #pragma mark - Getter
-
-- (AVAssetImageGenerator *)imageGenerator
-{
-    if (!_imageGenerator) {
-        _imageGenerator = [AVAssetImageGenerator assetImageGeneratorWithAsset:self.urlAsset];
-    }
-    return _imageGenerator;
-}
-
-- (ZFBrightnessView *)brightnessView
-{
-    if (!_brightnessView) {
-        _brightnessView = [ZFBrightnessView sharedBrightnessView];
-    }
-    return _brightnessView;
-}
 
 #pragma mark - ZFPlayerControlViewDelegate
 
@@ -1406,88 +899,31 @@ typedef NS_ENUM(NSInteger, PanDirection){
     }
 }
 
-- (void)zf_controlView:(UIView *)controlView backAction:(UIButton *)sender
+- (void)zf_controlView:(UIView *)controlView cneterPlayAction:(UIButton *)sender
 {
-    if (ZFPlayerShared.isLockScreen) {
-        [self unLockTheScreen];
-    } else {
-        if (!self.isFullScreen) {
-            // player加到控制器上，只有一个player时候
-            [self pause];
-            if ([self.delegate respondsToSelector:@selector(zf_playerBackAction)]) { [self.delegate zf_playerBackAction]; }
-        } else {
-            [self interfaceOrientation:UIInterfaceOrientationPortrait];
-        }
-    }
+    self.playDidEnd   = NO;
+    [self seekToTime:0 completionHandler:nil];
+
 }
 
 - (void)zf_controlView:(UIView *)controlView closeAction:(UIButton *)sender
 {
-    [self resetPlayer];
-    [self removeFromSuperview];
-}
-
-- (void)zf_controlView:(UIView *)controlView fullScreenAction:(UIButton *)sender
-{
-    [self _fullScreenAction];
-}
-
-- (void)zf_controlView:(UIView *)controlView lockScreenAction:(UIButton *)sender
-{
-    self.isLocked               = sender.selected;
-    // 调用AppDelegate单例记录播放状态是否锁屏
-    ZFPlayerShared.isLockScreen = sender.selected;
-}
-
-- (void)zf_controlView:(UIView *)controlView cneterPlayAction:(UIButton *)sender
-{
-    [self configZFPlayer];
-}
-
-- (void)zf_controlView:(UIView *)controlView repeatPlayAction:(UIButton *)sender
-{
-    // 没有播放完
-    self.playDidEnd   = NO;
-    // 重播改为NO
-    self.repeatToPlay = NO;
-    [self seekToTime:0 completionHandler:nil];
-    
-    if ([self.videoURL.scheme isEqualToString:@"file"]) {
-        self.state = ZFPlayerStatePlaying;
+    [self interfaceOrientation:UIInterfaceOrientationPortrait];
+    [self.controlView zf_playerHideControlView];
+    if ([self.delegate respondsToSelector:@selector(zf_playerCloseAction)]) {
+        [self.delegate zf_playerCloseAction];
+    } if (self.closeHandler) {
+        self.closeHandler();
     } else {
-        self.state = ZFPlayerStateBuffering;
+        [self resetPlayer];
+        [self removeFromSuperview];
     }
 }
 
 /** 加载失败按钮事件 */
 - (void)zf_controlView:(UIView *)controlView failAction:(UIButton *)sender
 {
-     [self configZFPlayer];
-}
-
-- (void)zf_controlView:(UIView *)controlView resolutionAction:(UIButton *)sender
-{
-    // 记录切换分辨率的时刻
-    NSInteger currentTime = (NSInteger)CMTimeGetSeconds([self.player currentTime]);
-    NSString *videoStr = self.videoURLArray[sender.tag - 200];
-    NSURL *videoURL = [NSURL URLWithString:videoStr];
-    if ([videoURL isEqual:self.videoURL]) { return; }
-    self.isChangeResolution = YES;
-    // reset player
-    [self resetToPlayNewURL];
-    self.videoURL = videoURL;
-    // 从xx秒播放
-    self.seekTime = currentTime;
-    // 切换完分辨率自动播放
-    [self autoPlayTheVideo];
-}
-
-- (void)zf_controlView:(UIView *)controlView downloadVideoAction:(UIButton *)sender
-{
-    NSString *urlStr = self.videoURL.absoluteString;
-    if ([self.delegate respondsToSelector:@selector(zf_playerDownload:)]) {
-        [self.delegate zf_playerDownload:urlStr];
-    }
+    [self configZFPlayer];
 }
 
 - (void)zf_controlView:(UIView *)controlView progressSliderTap:(CGFloat)value
@@ -1499,7 +935,7 @@ typedef NS_ENUM(NSInteger, PanDirection){
     
     [self.controlView zf_playerPlayBtnState:YES];
     [self seekToTime:dragedSeconds completionHandler:^(BOOL finished) {}];
-
+    
 }
 
 - (void)zf_controlView:(UIView *)controlView progressSliderValueChanged:(UISlider *)slider
@@ -1519,33 +955,13 @@ typedef NS_ENUM(NSInteger, PanDirection){
         
         //计算出拖动的当前秒数
         CGFloat dragedSeconds = floorf(totalTime * slider.value);
-
+        
         //转换成CMTime才能给player来控制播放进度
         CMTime dragedCMTime   = CMTimeMake(dragedSeconds, 1);
-   
-        [controlView zf_playerDraggedTime:dragedSeconds totalTime:totalTime isForward:style hasPreview:self.isFullScreen ? self.hasPreviewView : NO];
+        
+        [controlView zf_playerDraggedTime:dragedSeconds totalTime:totalTime isForward:style hasPreview:NO];
         
         if (totalTime > 0) { // 当总时长 > 0时候才能拖动slider
-            if (self.isFullScreen && self.hasPreviewView) {
-                
-                [self.imageGenerator cancelAllCGImageGeneration];
-                self.imageGenerator.appliesPreferredTrackTransform = YES;
-                self.imageGenerator.maximumSize = CGSizeMake(100, 56);
-                AVAssetImageGeneratorCompletionHandler handler = ^(CMTime requestedTime, CGImageRef im, CMTime actualTime, AVAssetImageGeneratorResult result, NSError *error){
-                    NSLog(@"%zd",result);
-                    if (result != AVAssetImageGeneratorSucceeded) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [controlView zf_playerDraggedTime:dragedSeconds sliderImage:self.thumbImg ? : ZFPlayerImage(@"ZFPlayer_loading_bgView")];
-                        });
-                    } else {
-                        self.thumbImg = [UIImage imageWithCGImage:im];
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [controlView zf_playerDraggedTime:dragedSeconds sliderImage:self.thumbImg ? : ZFPlayerImage(@"ZFPlayer_loading_bgView")];
-                        });
-                    }
-                };
-                [self.imageGenerator generateCGImagesAsynchronouslyForTimes:[NSArray arrayWithObject:[NSValue valueWithCMTime:dragedCMTime]] completionHandler:handler];
-            }
         } else {
             // 此时设置slider值为0
             slider.value = 0;
@@ -1555,7 +971,7 @@ typedef NS_ENUM(NSInteger, PanDirection){
         // 此时设置slider值为0
         slider.value = 0;
     }
-
+    
 }
 
 - (void)zf_controlView:(UIView *)controlView progressSliderTouchEnded:(UISlider *)slider
@@ -1571,6 +987,10 @@ typedef NS_ENUM(NSInteger, PanDirection){
     }
 }
 
+- (void)zf_controlView:(UIView *)controlView muteAction:(UIButton *)sender
+{
+    self.mute = sender.selected;
+}
 #pragma clang diagnostic pop
 
 @end

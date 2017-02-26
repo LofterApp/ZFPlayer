@@ -75,6 +75,10 @@
 - (void)zf_playerPlayEnd{}
 
 /**
+ * 是否静音
+ */
+- (void)zf_playerMute:(BOOL)isMute{}
+/**
  * 是否有下载功能
  */
 - (void)zf_playerHasDownloadFunction:(BOOL)sender{}

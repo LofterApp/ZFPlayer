@@ -27,32 +27,6 @@
 #import "ZFPlayerModel.h"
 #import "ZFPlayerControlViewDelegate.h"
 
-// playerLayer的填充模式（默认：等比例填充，直到一个维度到达区域边界）
-typedef NS_ENUM(NSInteger, ZFPlayerLayerGravity) {
-    ZFPlayerLayerGravityResize,           // 非均匀模式。两个维度完全填充至整个视图区域
-    ZFPlayerLayerGravityResizeAspect,     // 等比例填充，直到一个维度到达区域边界
-    ZFPlayerLayerGravityResizeAspectFill  // 等比例填充，直到填充满整个视图区域，其中一个维度的部分区域会被裁剪
-};
-
-// 播放器的几种状态
-typedef NS_ENUM(NSInteger, ZFPlayerState) {
-    ZFPlayerStateFailed,     // 播放失败
-    ZFPlayerStateBuffering,  // 缓冲中
-    ZFPlayerStatePlaying,    // 播放中
-    ZFPlayerStateStopped,    // 停止播放
-    ZFPlayerStatePause       // 暂停播放
-};
-
-@protocol ZFPlayerDelegate <NSObject>
-@optional
-/** 返回按钮事件 */
-- (void)zf_playerBackAction;
-/** 下载视频 */
-- (void)zf_playerDownload:(NSString *)url;
-/** 播放状态回调 */
-- (void)zf_playerState:(ZFPlayerState)state;
-
-@end
 
 @interface ZFPlayerView : UIView <ZFPlayerControlViewDelagate>
 
@@ -72,11 +46,6 @@ typedef NS_ENUM(NSInteger, ZFPlayerState) {
 /** 播放器当前播放的数据Model */
 @property (nonatomic, strong, readonly) ZFPlayerModel *playerModel;
 
-/** 静音（默认为NO）*/
-@property (nonatomic, assign) BOOL                    mute;
-
-@property (nonatomic, assign, setter=isLoop:) BOOL                   loop;    /**< 循环播放 */
-
 /** 当cell划出屏幕的时候停止播放（默认为NO） */
 @property (nonatomic, assign) BOOL                    stopPlayWhileCellNotVisable;
 /** 当cell播放视频由全屏变为小屏时候，是否回到中间位置(默认YES) */
@@ -94,11 +63,6 @@ typedef NS_ENUM(NSInteger, ZFPlayerState) {
  * 控制层传nil，默认使用ZFPlayerControlView(如自定义可传自定义的控制层)
  */
 - (void)playerControlView:(UIView *)controlView playerModel:(ZFPlayerModel *)playerModel;
-
-/**
- 取消显示 控制层
- */
-- (void)enableControlView:(BOOL)enable;
 
 /**
  *  自动播放，默认不自动播放

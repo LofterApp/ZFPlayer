@@ -43,10 +43,41 @@
 
 #define ZFPlayerOrientationIsPortrait       UIDeviceOrientationIsPortrait([UIDevice currentDevice].orientation)
 
+// playerLayer的填充模式（默认：等比例填充，直到一个维度到达区域边界）
+typedef NS_ENUM(NSInteger, ZFPlayerLayerGravity) {
+    ZFPlayerLayerGravityResize,           // 非均匀模式。两个维度完全填充至整个视图区域
+    ZFPlayerLayerGravityResizeAspect,     // 等比例填充，直到一个维度到达区域边界
+    ZFPlayerLayerGravityResizeAspectFill  // 等比例填充，直到填充满整个视图区域，其中一个维度的部分区域会被裁剪
+};
+
+// 播放器的几种状态
+typedef NS_ENUM(NSInteger, ZFPlayerState) {
+    ZFPlayerStateFailed,     // 播放失败
+    ZFPlayerStateBuffering,  // 缓冲中
+    ZFPlayerStatePlaying,    // 播放中
+    ZFPlayerStateStopped,    // 停止播放
+    ZFPlayerStatePause       // 暂停播放
+};
+
+@protocol ZFPlayerDelegate <NSObject>
+@optional
+/** 返回按钮事件 */
+- (void)zf_playerBackAction;
+/** 关闭按钮事件 */
+- (void)zf_playerCloseAction;
+/** 下载视频 */
+- (void)zf_playerDownload:(NSString *)url;
+/** 播放状态回调 */
+- (void)zf_playerState:(ZFPlayerState)state;
+
+@end
+
 
 #import "ZFPlayerView.h"
-#import "ZFPlayerModel.h"
 #import "ZFPlayerControlView.h"
+#import "ZFPlayerSimpleView.h"
+#import "ZFPlayerSimpleControlView.h"
+#import "ZFPlayerModel.h"
 #import "ZFBrightnessView.h"
 #import "UITabBarController+ZFPlayerRotation.h"
 #import "UIViewController+ZFPlayerRotation.h"

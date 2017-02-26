@@ -32,8 +32,9 @@
 @interface ZFTableViewController () <ZFPlayerDelegate>
 
 @property (nonatomic, strong) NSMutableArray      *dataSource;
-@property (nonatomic, strong) ZFPlayerView        *playerView;
-@property (nonatomic, strong) ZFPlayerControlView *controlView;
+//@property (nonatomic, strong) ZFPlayerView        *playerView;
+
+@property (nonatomic, strong) ZFPlayerSimpleView        *playerView;
 
 @end
 
@@ -115,13 +116,14 @@
         playerModel.fatherView       = weakCell.picView;
         
         // 设置播放控制层和model
-        [weakSelf.playerView playerControlView:weakSelf.controlView playerModel:playerModel];
+//        [weakSelf.playerView playerControlView:nil playerModel:playerModel];
+        [weakSelf.playerView resetToPlayNewVideo:playerModel];
         [weakSelf.playerView enableControlView:NO];
         weakSelf.playerView.loop = YES;
         weakSelf.playerView.mute = YES;
         
         // 下载功能
-        weakSelf.playerView.hasDownload = YES;
+//        weakSelf.playerView.hasDownload = YES;
         // 自动播放
         [weakSelf.playerView autoPlayTheVideo];
     };
@@ -131,15 +133,19 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     NSLog(@"didSelectRowAtIndexPath---%zd",indexPath.row);
+    ZFPlayerCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    [cell cellClicked];
 }
 
-- (ZFPlayerView *)playerView
+//- (ZFPlayerView *)playerView
+- (ZFPlayerSimpleView *)playerView
 {
     if (!_playerView) {
-        _playerView = [ZFPlayerView sharedPlayerView];
+//        _playerView = [ZFPlayerView sharedPlayerView];
+        _playerView = [ZFPlayerSimpleView sharedPlayerView];
         _playerView.delegate = self;
-        // 当cell播放视频由全屏变为小屏时候，不回到中间位置
-        _playerView.cellPlayerOnCenter = NO;
+//        // 当cell播放视频由全屏变为小屏时候，不回到中间位置
+//        _playerView.cellPlayerOnCenter = NO;
         
         // 当cell划出屏幕的时候停止播放
         // _playerView.stopPlayWhileCellNotVisable = YES;
@@ -149,14 +155,6 @@
         // _playerView.mute = YES;
     }
     return _playerView;
-}
-
-- (ZFPlayerControlView *)controlView
-{
-    if (!_controlView) {
-        _controlView = [[ZFPlayerControlView alloc] init];
-    }
-    return _controlView;
 }
 
 #pragma mark - ZFPlayerDelegate
